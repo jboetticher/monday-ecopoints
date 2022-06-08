@@ -4,6 +4,7 @@ import mondaySdk from "monday-sdk-js";
 import "monday-ui-react-core/dist/main.css"
 //Explore more Monday React Components here: https://style.monday.com/
 import AttentionBox from "monday-ui-react-core/dist/AttentionBox.js"
+import processTable from "./processTable";
 
 const monday = mondaySdk();
 
@@ -17,7 +18,7 @@ const App = props => {
     monday.listen("context", res => {
       setBoardCxt(res.data);
       
-      monday.api(`query ($boardIds: [Int]) { boards (ids:$boardIds) { name items(limit:1000) { name column_values { title text } } } }`,
+      monday.api(`query ($boardIds: [Int]) { boards (ids:$boardIds) { name items(limit:10000) { name column_values { title text } } } }`,
         { variables: {boardIds: res.data.boardIds} }
       )
       .then(res => {
@@ -34,32 +35,18 @@ const App = props => {
   }, []);
 
   // Calculate total eco points
-  let ecoPoints = 0;
-  let ecoPointColumn = 'EcoPoints';
-  if(settings != null && settings.ecopointcolumn != null && settings.ecopointcolumn !== '') 
-    ecoPointColumn = settings.ecopointcolumn;
-  console.log(ecoPointColumn);
-  if(boardData) {
-    for(let b of boardData.boards) {
-      for(let item of b.items) {
-        for(let column of item.column_values) {
-          if(column.title === ecoPointColumn) {
-            const points = parseInt(column.text);
-            console.log('adding eco points for ' + item.name, points);
-            if(!isNaN(points)) ecoPoints += points;
-          }
-        }
-      }
-    }
-  }
+  const { totalPoints, pointsToPerson } = processTable(settings, boardData);
 
   return (
     <div className="App">
       <AttentionBox
         title="Carbon Cruncher"
-        text={'Total Eco Points: ' + ecoPoints}
+        text={'Total Eco Points: ' + totalPoints}
         type="success"
       />
+      {Object.entries(pointsToPerson).map((v, i) => 
+        <AttentionBox key={i} title={v[0]} text={v[1]} />
+      )}
     </div>
   );
 }
