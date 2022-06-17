@@ -5,20 +5,26 @@ import Flex from "monday-ui-react-core/dist/Flex";
 import Avatar from "monday-ui-react-core/dist/Avatar";
 import Divider from "monday-ui-react-core/dist/Divider";
 import Heading from "monday-ui-react-core/dist/Heading";
+import Skeleton from "monday-ui-react-core/dist/Skeleton";
 
 /**
  * props.monday -> monday sdk
  */
 const EcoWarriorList = props => {
 
-  const pointsToPerson = props.pointsToPerson;
+  const personToPoints = props.personToPoints;
   const totalPoints = props.totalPoints;
   const textColor = props?.boardCxt?.theme === 'light' ? 'black' : 'white';
+  const personData = props.personData;
+
+  // TODO: add a check your settings prompt if there are no users
 
   try {
-    const top3 = Object.entries(pointsToPerson)
+    // Retrieves top 3 ids and their points
+    const top3 = Object.entries(personToPoints)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 2);
+    if(top3 <= 0) throw new Error('No data yet');
 
     return (
       <div>
@@ -26,14 +32,18 @@ const EcoWarriorList = props => {
         <Divider />
         {top3.map((x, i) => (
           <Flex key={i}>
-            <Avatar size='medium' />
+            <Avatar size='medium' type='img' src={personData[x[0]]?.photo_thumb} />
             {i == 0 ?
               <>
-                <h4 style={{ marginLeft: '1rem', marginRight: '1rem', width: '100%' }}>{x[0]}</h4>
+                <h4 style={{ marginLeft: '1rem', marginRight: '1rem', width: '100%' }}>
+                  {personData[x[0]]?.name ?? personData[x[0]]?.email ?? x[0]}
+                </h4>
                 <h4 style={{ textAlign: 'right' }}>{x[1]}</h4>
               </> :
               <>
-                <h5 style={{ marginLeft: '1rem', marginRight: '1rem', width: '100%' }}>{x[0]}</h5>
+                <h5 style={{ marginLeft: '1rem', marginRight: '1rem', width: '100%' }}>
+                  {personData[x[0]]?.name ?? personData[x[0]]?.email ?? x[0]}
+                </h5>
                 <h5 style={{ textAlign: 'right' }}>{x[1]}</h5>
               </>
             }
@@ -46,19 +56,33 @@ const EcoWarriorList = props => {
             src="https://cdn.discordapp.com/attachments/426940183112318976/985436645962686504/EcoPointx128.png"
             width='24px' style={{ marginRight: '4px', marginLeft: '4px' }}
           />
-          <p>are available in total!</p>
+          <p>exist!</p>
         </Flex>
       </div>
     );
   }
   catch (err) {
     // Return skeleton
-    console.error(err);
+    console.log(err);
+    const phonyArr = [0, 0, 0];
     return (
       <div>
         <Heading value="Top EcoPoint Earners" customColor={textColor} size="small" />
         <Divider />
-        <div>skeliton :)</div>
+        {
+          phonyArr.map((x, i) => 
+            <Flex key={i} style={{marginBottom: '1rem'}}>
+              <Skeleton type='circle' />
+              <div style={{width: '1rem'}} />
+              <Skeleton
+                size="h3"
+                type="text"
+              />
+            </Flex>
+          )
+        }
+        <Divider />
+        <Skeleton size="small" type="text" />
       </div>);
   }
 }

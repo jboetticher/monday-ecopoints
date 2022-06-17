@@ -4,39 +4,42 @@
  * @param {Object} board The data of the board queried from monday.
  */
 export default function processTable(settings, board) {
-  let totalPoints = 0, pointsToPerson = [];
+  let totalPoints = 0, personToPoints = [];
 
   // Find the column in the data that should correspond to ecopoints.
   let ecoPointColumn = 'EcoPoints';
   if (settings != null && settings.ecopointcolumn != null && settings.ecopointcolumn !== '')
     ecoPointColumn = settings.ecopointcolumn;
+  let personColumn = 'Person';
+  if (settings != null && settings.personcolumn != null && settings.personcolumn !== '')
+    personColumn = settings.personcolumn;
 
   // Calculate eco points related data if board data has been provided.
   if (board) {
     for (let b of board.boards) {
       for (let item of b.items) {
-        let curUsers, points;
+        let itemAssignees = [], points;
         for (let column of item.column_values) {
           if (column.title === ecoPointColumn) {
             points = parseInt(column.text);
           }
-          if (column.title === 'Person') {
-            curUsers = column.text.split(", ");
+          if (column.title === personColumn) {
+            JSON.parse(column.value)?.personsAndTeams
+              .filter(x => x.kind === 'person')
+              .forEach(x => itemAssignees.push(x.id));
           }
         }
-
         if (!isNaN(points)) {
           totalPoints += points;
-          for (let u of curUsers) {
-            if (u === '') continue;
-            else if (pointsToPerson[u] == null) pointsToPerson[u] = points;
-            else pointsToPerson[u] += points;
+          for (let assignee of itemAssignees) {
+            if (personToPoints[assignee] == null) personToPoints[assignee] = points;
+            else personToPoints[assignee] += points;
           }
         }
       }
     }
   }
 
-  return { totalPoints, pointsToPerson };
+  return { totalPoints, personToPoints };
 }
 
