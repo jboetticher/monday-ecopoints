@@ -27,9 +27,8 @@ const EcoWarriorList = props => {
     if(top3 <= 0) throw new Error('No data yet');
 
     return (
-      <div>
-        <Heading value="Top EcoPoint Earners" customColor={textColor} size="small" />
-        <Divider />
+      <EcoPanel>
+        <Heading value="Top ecopoint earners" customColor={textColor} type={Heading.types.h3} />
         {top3.map((x, i) => (
           <Flex key={i}>
             <Avatar size='medium' type='img' src={personData[x[0]]?.photo_thumb} />
@@ -58,20 +57,19 @@ const EcoWarriorList = props => {
           />
           <p>exist!</p>
         </Flex>
-      </div>
+      </EcoPanel>
     );
   }
   catch (err) {
     // Return skeleton
-    console.log(err);
+    //console.log(err);
     const phonyArr = [0, 0, 0];
     return (
-      <div>
-        <Heading value="Top EcoPoint Earners" customColor={textColor} size="small" />
-        <Divider />
+      <EcoPanel>
+        <Heading value="Top ecopoint earners" customColor={textColor} type={Heading.types.h3} />
         {
           phonyArr.map((x, i) => 
-            <Flex key={i} style={{marginBottom: '1rem'}}>
+            <Flex key={i} style={{marginBottom: '1.5rem'}}>
               <Skeleton type='circle' />
               <div style={{width: '1rem'}} />
               <Skeleton
@@ -83,8 +81,16 @@ const EcoWarriorList = props => {
         }
         <Divider />
         <Skeleton size="small" type="text" />
-      </div>);
+      </EcoPanel>);
   }
+}
+
+const EcoPanel = props => {
+  return (
+    <div className="ecopanel">
+      {props.children}
+    </div>
+  )
 }
 
 export default EcoWarriorList;
