@@ -6,6 +6,7 @@ import "monday-ui-react-core/dist/main.css"
 import AttentionBox from "monday-ui-react-core/dist/AttentionBox.js"
 import processTable from "./processTable";
 import EcoWarriorList from './components/EcoWarriorList';
+import SettingsPanel from './components/SettingsPanel';
 import DialogContentContainer from "monday-ui-react-core/dist/DialogContentContainer.js";
 
 const monday = mondaySdk();
@@ -74,6 +75,7 @@ const App = props => {
         boardCxt={boardCxt} personToPoints={personToPoints} 
         totalPoints={totalPoints} personData={personData}
       />
+      <SettingsPanel />
     </div>
   );
 }

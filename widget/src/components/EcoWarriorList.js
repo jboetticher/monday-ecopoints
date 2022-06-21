@@ -21,7 +21,6 @@ const EcoWarriorList = props => {
 
   try {
     // Retrieves top 3 ids and their points
-    console.log("PERSON TO POINTS", personToPoints)
     const top3 = Object.entries(personToPoints)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 3);

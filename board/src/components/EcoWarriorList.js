@@ -6,6 +6,7 @@ import Avatar from "monday-ui-react-core/dist/Avatar";
 import Divider from "monday-ui-react-core/dist/Divider";
 import Heading from "monday-ui-react-core/dist/Heading";
 import Skeleton from "monday-ui-react-core/dist/Skeleton";
+import EcoPanel from "./EcoPanel";
 
 /**
  * props.monday -> monday sdk
@@ -14,24 +15,21 @@ const EcoWarriorList = props => {
 
   const personToPoints = props.personToPoints;
   const totalPoints = props.totalPoints;
-  const textColor = props?.boardCxt?.theme === 'light' ? 'black' : 'white';
   const personData = props.personData;
 
   // TODO: add a check your settings prompt if there are no users
 
   try {
     // Retrieves top 3 ids and their points
-    console.log("PERSON TO POINTS", personToPoints)
     const top3 = Object.entries(personToPoints)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3);
+      .sort((a, b) => b[1] - a[1]);
     if(top3 <= 0) throw new Error('No data yet');
 
     console.log(top3);
 
     return (
       <EcoPanel>
-        <Heading value="Top ecopoint earners" customColor={textColor} type={Heading.types.h3} />
+        <Heading value="Top ecopoint earners" customColor={'black'} type={Heading.types.h3} />
         {top3.map((x, i) => (
           <Flex key={i}>
             <Avatar size='medium' type='img' src={personData[x[0]]?.photo_thumb} />
@@ -86,14 +84,6 @@ const EcoWarriorList = props => {
         <Skeleton size="small" type="text" />
       </EcoPanel>);
   }
-}
-
-const EcoPanel = props => {
-  return (
-    <div className="ecopanel">
-      {props.children}
-    </div>
-  )
 }
 
 export default EcoWarriorList;
