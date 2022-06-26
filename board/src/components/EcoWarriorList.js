@@ -67,7 +67,7 @@ const EcoWarriorList = props => {
     const phonyArr = [0, 0, 0];
     return (
       <EcoPanel>
-        <Heading value="Top ecopoint earners" customColor={textColor} type={Heading.types.h3} />
+        <Heading value="Top ecopoint earners" customColor={'black'} type={Heading.types.h3} />
         {
           phonyArr.map((x, i) => 
             <Flex key={i} style={{marginBottom: '1.5rem'}}>
