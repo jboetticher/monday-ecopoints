@@ -29,7 +29,7 @@ const EcoWarriorList = props => {
 
     return (
       <EcoPanel>
-        <Heading value="Top ecopoint earners" customColor={'black'} type={Heading.types.h3} />
+        <Heading value="Top ecopoint earners" customColor={'black'} type={Heading.types.h2} />
         {top3.map((x, i) => (
           <Flex key={i}>
             <Avatar size='medium' type='img' src={personData[x[0]]?.photo_thumb} />
@@ -67,7 +67,7 @@ const EcoWarriorList = props => {
     const phonyArr = [0, 0, 0];
     return (
       <EcoPanel>
-        <Heading value="Top ecopoint earners" customColor={'black'} type={Heading.types.h3} />
+        <Heading value="Top ecopoint earners" customColor={'black'} type={Heading.types.h2} />
         {
           phonyArr.map((x, i) => 
             <Flex key={i} style={{marginBottom: '1.5rem'}}>

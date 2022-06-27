@@ -25,17 +25,6 @@ function contract(symbol: "USDC" | "NCT" | "OffsetHelper", forceProduction = fal
   }
 }
 
-/*
-export const burnTokens = functions.https.onRequest(async (request, response) => {
-  // Do the toucan thing
-
-  // Redeem NCT for carbon CAPTURE credit & redeem the carbon capture credit
-  // We're using the offset helper contract so that we don't need 2 transactions
-
-
-});
-*/
-
 async function pricePerTon() : Promise<number | undefined> {
   // 1. Get NCT price
   console.log(contract("USDC", true), contract("NCT", true));
@@ -57,3 +46,21 @@ export const getCarbonCreditPrice = functions.https.onRequest(async (request, re
   if (price === undefined) response.status(400).json({success: false});
   else response.status(200).json({success: true, price});
 });
+
+export const burnTokens = functions.https.onRequest(async (request, response) => {
+    const amount = parseInt(request.body.amount);
+    if(isNaN(amount) || amount < 0 || amount > 10) {
+        response.status(400).json({ success: false, reason: "Invalid amount." });
+        return;
+    }
+
+    // Redeem NCT for carbon CAPTURE credit & redeem the carbon capture credit
+    // We're using the offset helper contract so that we don't need 2 transactions
+    const ethResponse = await offsetHelperContract.autoOffsetUsingToken(
+        contract('USDC'), 
+        contract('NCT'), 
+        amount + "000000000000000000"
+    );
+
+    response.status(200).json({ success: true, ethResponse });
+  });
