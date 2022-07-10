@@ -13,12 +13,31 @@ To use ngrok, first run `npm run start` and then in a separate console run `npm 
 ### Server
 Contains the backend server for EcoPoints (user data, carbon credits processing, payment processing).  
 Uses firebase for database & endpoints.  
+
+#### secrets.ts
 Server requires a `secrets.ts` within the src folder, which hasn't been uploaded for security. It 
 exports the following strings:  
-- testPrivateKey: a wallet's private key to use for testing.
-- prodPrivateKey: a wallet's private key to use for production.
-- rpcProvider: an rpc provider for a polygon mainnet node.
+- privateKey: an ethereum wallet's private key (should be funded with testnet/production MATIC).
+- rpcProvider: an rpc provider for testnet/production MATIC.
 - stripeKey: the API key for Stripe, a credit card processor.
+- stripeWebhook: the webhook secret from Stripe.
+
+Here is an example of how it is set up to distinguish between development and production:
+```javascript
+const isProduction = process.env.NODE_ENV === "production";
+
+const privateKey = isProduction ? "PROD PRIVATE KEY" : "TEST PRIVATE KEY";
+const rpcProvider = isProduction ? "PROD RPC" : "TEST RPC";
+const stripeKey = isProduction ? "PROD STRIPE KEY" : "TEST STRIPE KEY";
+const stripeWebhook = "STRIPE WEB HOOK SECRET";
+
+export {
+    privateKey,
+    rpcProvider,
+    stripeKey,
+    stripeWebhook
+};
+```
 
 ### Widget
 Contains the widget view for EcoPoints. Deploy on monday.com to set up.  

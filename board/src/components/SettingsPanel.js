@@ -6,6 +6,18 @@ import Heading from "monday-ui-react-core/dist/Heading";
 import Slider from "monday-ui-react-core/dist/Slider";
 import Accordion from "monday-ui-react-core/dist/Accordion";
 import AccordionItem from "monday-ui-react-core/dist/AccordionItem";
+import { initializeApp } from 'firebase/app';
+import { getFunctions, httpsCallable } from 'firebase/functions';
+
+/*
+const app = initializeApp({
+  projectId: "monday-ecopoints",
+  apiKey: "AIzaSyBXrjZj2_on0RQbbCevUFV_QRZC711gUak",
+  authDomain: "monday-ecopoints.firebaseapp.com"
+});
+const functions = getFunctions(app);
+*/
+const isProduction = process.env.NODE_ENV === "production";
 
 /**
  * props.monday -> monday sdk
@@ -13,6 +25,7 @@ import AccordionItem from "monday-ui-react-core/dist/AccordionItem";
 const SettingsPanel = props => {
 
   const [carbonPledge, setCarbonPledge] = useState(5);
+  const [carbonLoading, setCarbonLoading] = useState(false);
 
   const logoContainerStyle = {
     display: 'flex',
@@ -21,9 +34,32 @@ const SettingsPanel = props => {
   }
 
   function removeCarbonRequest(e) {
-    alert("OOGLY");
-    fetch("https://us-central1-monday-ecopoints.cloudfunctions.net/authorizationTest")
-      .then(res => console.log(res));
+    setCarbonLoading(true);
+
+    var myHeaders = new Headers();
+    myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
+
+    var urlencoded = new URLSearchParams();
+    urlencoded.append("tons", "1");
+    urlencoded.append("returnURL", window.location.href.toString());
+
+    var requestOptions = {
+      method: 'POST',
+      headers: myHeaders,
+      body: urlencoded,
+      redirect: 'follow'
+    };
+
+    const checkoutURL = isProduction ? 
+      "https://us-central1-monday-ecopoints.cloudfunctions.net/createCheckoutSession" : 
+      "http://localhost:5001/monday-ecopoints/us-central1/createCheckoutSession";
+    fetch(checkoutURL, requestOptions)
+      .then(response => response.json())
+      .then(result => {
+        window.open(result.url);//, "_blank");
+        setCarbonLoading(false);
+      })
+      .catch(error => console.log('error', error));
   }
 
   return (
@@ -48,7 +84,9 @@ const SettingsPanel = props => {
             <div style={{ display: "flex" }}>
               <div style={{ fontSize: '36px', width: '40%', color: 'var(--color-success)' }}>${carbonPledge * 5}.00</div>
               <div style={{ width: '60%', textAlign: 'right' }}>
-                <Button color={Button.colors.POSITIVE} onClick={removeCarbonRequest}>Remove Carbon!</Button>
+                <Button color={Button.colors.POSITIVE} onClick={removeCarbonRequest} loading={carbonLoading}>
+                  Remove carbon
+                </Button>
               </div>
             </div>
             <div style={{ marginTop: '1rem' }}>
@@ -60,7 +98,7 @@ const SettingsPanel = props => {
           <div className="abox">
             <Heading value="EcoPoints for teams" customColor={'black'} type={Heading.types.h4} />
             <div>
-              EcoPoints can be anything and are calculated <b>per board</b>. Sales, time spent, or just an 
+              EcoPoints can be anything and are calculated <b>per board</b>. Sales, time spent, or just an
               arbitrary number. As long as it's a number column in your tasks, you can set it in your settings!
             </div>
             <div>
