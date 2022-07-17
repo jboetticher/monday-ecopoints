@@ -36,12 +36,19 @@ const SettingsPanel = props => {
   function removeCarbonRequest(e) {
     setCarbonLoading(true);
 
+    // Get top user
+    const personToPoints = props.personToPoints;
+    const champion = Object.entries(personToPoints)
+      .sort((a, b) => b[1] - a[1])[0];
+
     var myHeaders = new Headers();
     myHeaders.append("Content-Type", "application/x-www-form-urlencoded");
 
     var urlencoded = new URLSearchParams();
-    urlencoded.append("tons", "1");
+    urlencoded.append("tons", carbonPledge.toString());
     urlencoded.append("returnURL", window.location.href.toString());
+    urlencoded.append("championId", champion[0]);
+    urlencoded.append("championPoints", champion[1].toString());
 
     var requestOptions = {
       method: 'POST',

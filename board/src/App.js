@@ -7,6 +7,7 @@ import AttentionBox from "monday-ui-react-core/dist/AttentionBox.js"
 import processTable from "./processTable";
 import EcoWarriorList from './components/EcoWarriorList';
 import SettingsPanel from './components/SettingsPanel';
+import { EcoContextProvider } from "./components/EcoContext";
 import DialogContentContainer from "monday-ui-react-core/dist/DialogContentContainer.js";
 
 const monday = mondaySdk();
@@ -24,11 +25,11 @@ const App = props => {
       console.log(res.data);
 
       // Query for the boards and their data.
-      const boardQuery = 
+      const boardQuery =
         `query ($boardIds: [Int]) { boards (ids:$boardIds) { name items(limit:10000) { name column_values { title text type value } } } }`;
       monday.api(boardQuery, { variables: { boardIds: res.data.boardIds } })
         .then(res => {
-          console.log("BOARDS", res.data);
+          // console.log("BOARDS", res.data);
           setBoardData(res.data);
 
           // Find the personId for every person assigned on the board.
@@ -51,9 +52,9 @@ const App = props => {
           monday.api(personQuery, { variables: { personIds } })
             .then(res => {
               let personIdToImageDictionary = [];
-              for(let i = 0; i < personIds.length; i++) 
+              for (let i = 0; i < personIds.length; i++)
                 personIdToImageDictionary[personIds[i]] = res.data.users[i];
-              console.log("PEOPLE DATA", personIdToImageDictionary);
+              // console.log("PEOPLE DATA", personIdToImageDictionary);
               setPersonData(personIdToImageDictionary);
             });
         })
@@ -61,7 +62,7 @@ const App = props => {
 
     monday.listen("settings", res => {
       setSettings(res.data);
-      console.log('SETTINGS', res.data);
+      // console.log('SETTINGS', res.data);
     });
 
   }, []);
@@ -71,11 +72,13 @@ const App = props => {
 
   return (
     <div className="App">
-      <EcoWarriorList 
-        boardCxt={boardCxt} personToPoints={personToPoints} 
-        totalPoints={totalPoints} personData={personData}
-      />
-      <SettingsPanel />
+      <EcoContextProvider>
+        <EcoWarriorList
+          boardCxt={boardCxt} personToPoints={personToPoints}
+          totalPoints={totalPoints} personData={personData}
+        />
+        <SettingsPanel personToPoints={personToPoints} />
+      </EcoContextProvider>
     </div>
   );
 }

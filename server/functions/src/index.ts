@@ -1,7 +1,7 @@
 import * as functions from "firebase-functions";
-import { privateKey, rpcProvider, stripeKey, stripeWebhook } from "./secrets";
-import { OffsetHelperABI } from "./abi";
-import { ethers } from "ethers";
+import {privateKey, rpcProvider, stripeKey, stripeWebhook} from "./secrets";
+import {OffsetHelperABI} from "./abi";
+import {ethers} from "ethers";
 import * as fb from "firebase-admin";
 import Stripe from "stripe";
 
@@ -13,7 +13,7 @@ const signer = new ethers.Wallet(privateKey, provider);
 const offsetHelperContract = new ethers.Contract(contract("OffsetHelper"), OffsetHelperABI, signer);
 
 // Stripe payment initialization
-const stripe = new Stripe(stripeKey, { apiVersion: "2020-08-27" });
+const stripe = new Stripe(stripeKey, {apiVersion: "2020-08-27"});
 
 // Facebook app initialization
 fb.initializeApp();
@@ -56,12 +56,12 @@ export const lastPurchase = functions.https.onRequest(async (request, response) 
 
   console.log(typeof (board), board);
   if (typeof (board) !== "number" || isNaN(board)) {
-    response.status(400).json({ success: false, reason: "Board incorrect" });
+    response.status(400).json({success: false, reason: "Board incorrect"});
     return;
   }
 
   const res = await db.collection(PURCHASES_COLLECTION).where("board", "==", board).orderBy("date", "desc").limit(1).get();
-  response.status(200).json({ success: true, ...(res.docs[0].data()) });
+  response.status(200).json({success: true, ...(res.docs[0].data())});
 });
 
 /*
@@ -75,7 +75,7 @@ export const createCheckoutSession = functions.https.onRequest(async (request, r
   const board = Number.parseInt(request.body.board);
 
   if (typeof (tons) !== "number" || isNaN(tons) || tons < 1 || tons > 10) {
-    response.status(400).json({ success: false, reason: "Incorrect amount of tons." });
+    response.status(400).json({success: false, reason: "Incorrect amount of tons."});
     return;
   }
 
@@ -112,19 +112,19 @@ export const createCheckoutSession = functions.https.onRequest(async (request, r
       },
     ],
     mode: "payment",
-    success_url: "https://www.google.com/",
+    success_url: "https://ecopoints.projk.net/success",
     cancel_url: request.body.returnURL,
-    automatic_tax: { enabled: true },
+    automatic_tax: {enabled: true},
   });
   console.log("FINISHED SESSION CREATION");
 
   // Create session object in firebase
-  const checkoutRecord : CheckoutRecord = { id: session.id, board, tons };
-  if(session.customer != null) checkoutRecord.customer = session.customer?.toString();
+  const checkoutRecord : CheckoutRecord = {id: session.id, board, tons};
+  if (session.customer != null) checkoutRecord.customer = session.customer?.toString();
   await db.collection(CHECKOUT_COLLECTION).doc(session.id).create(checkoutRecord);
 
   response.setHeader("Content-Type", "application/json");
-  response.status(200).json({ success: true, url: session.url });
+  response.status(200).json({success: true, url: session.url});
 });
 
 /*
@@ -149,7 +149,7 @@ export const stripeFulfillment = functions.runWith({
   }
 
   // Handle the checkout.session.completed event
-  if (event.type === 'checkout.session.completed') {
+  if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
 
     const document = db.collection(CHECKOUT_COLLECTION).doc(session.id);
@@ -157,18 +157,17 @@ export const stripeFulfillment = functions.runWith({
 
     // Redeem NCT for carbon CAPTURE credit & redeem the carbon capture credit.
     // We're using the offset helper contract so that we don't need 2 transactions.
-    // The only maintenance this requires is insuring that there is enough USDC on 
+    // The only maintenance this requires is insuring that there is enough USDC on
     // the production account.
     let hash: string;
     try {
       const ethResponse: ethers.Transaction = await offsetHelperContract.autoOffsetUsingToken(
-        contract("USDC"),
-        contract("NCT"),
-        data.tons + "000000000000000000"
+          contract("USDC"),
+          contract("NCT"),
+          data.tons + "000000000000000000"
       );
       hash = ethResponse.hash ?? "ERROR";
-    }
-    catch(err) {
+    } catch (err) {
       hash = "ERROR";
       console.log(err);
     }
@@ -176,17 +175,17 @@ export const stripeFulfillment = functions.runWith({
     // Update firebase
     await document.update({
       ethTransaction: hash,
-      completed: true
+      completed: true,
     });
     await db.collection(PURCHASES_COLLECTION).doc(session.id).create({
       board: data.board,
       date: Date.now(),
       tons: data.tons,
-      ethTransaction: hash
+      ethTransaction: hash,
     });
   }
 
-  response.status(200).send({ success: true });
+  response.status(200).send({success: true});
 });
 
 /*
@@ -198,9 +197,9 @@ async function pricePerTon(): Promise<number | undefined> {
   // 1. Get NCT price
   console.log(contract("USDC", true), contract("NCT", true));
   const nctPrice = await offsetHelperContract.calculateNeededTokenAmount(
-    contract("USDC", true),
-    contract("NCT", true),
-    "1000000000000000000"
+      contract("USDC", true),
+      contract("NCT", true),
+      "1000000000000000000"
   );
   const adjustedPrice = nctPrice / 1000000;
 
@@ -215,6 +214,6 @@ async function pricePerTon(): Promise<number | undefined> {
 export const getCarbonCreditPrice = functions.https.onRequest(async (request, response) => {
   const price = await pricePerTon();
 
-  if (price === undefined) response.status(400).json({ success: false });
-  else response.status(200).json({ success: true, price });
+  if (price === undefined) response.status(400).json({success: false});
+  else response.status(200).json({success: true, price});
 });
