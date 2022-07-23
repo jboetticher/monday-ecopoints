@@ -21,6 +21,7 @@ const EcoWarriorList = props => {
   const personToPoints = props.personToPoints;
   const totalPoints = props.totalPoints;
   const personData = props.personData;
+  const firebaseData = props.firebaseData;
 
   // TODO: add a check your settings prompt if there are no users
 
@@ -61,7 +62,16 @@ const EcoWarriorList = props => {
               ))}
             </TabPanel>
             <TabPanel>
-              oh boy i love previous winners
+              {firebaseData?.previousChampions?.map((x, i) => (
+                <Flex key={i}>
+                  <Avatar size='medium' type='img' src={personData[x.id]?.photo_thumb} />
+                  <h4 style={{ marginLeft: '1rem' }}>{(new Date(x.date)).toLocaleDateString()}</h4>
+                  <h4 style={{ marginLeft: '1rem', marginRight: '1rem', width: '100%' }}>
+                    {personData[x.id]?.name ?? personData[x.id]?.email ?? x.id}
+                  </h4>
+                  <h4 style={{ textAlign: 'right' }}>{x.points}</h4>
+                </Flex>
+              ))}
             </TabPanel>
           </TabPanels>
         </TabsContext>
