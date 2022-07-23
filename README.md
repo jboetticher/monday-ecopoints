@@ -32,6 +32,7 @@ const stripeKey = isProduction ? "PROD STRIPE KEY" : "TEST STRIPE KEY";
 const stripeWebhook = "STRIPE WEB HOOK SECRET";
 
 export {
+    isProduction,
     privateKey,
     rpcProvider,
     stripeKey,

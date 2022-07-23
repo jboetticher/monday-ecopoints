@@ -11,6 +11,7 @@ import { EcoContextProvider } from "./components/EcoContext";
 import DialogContentContainer from "monday-ui-react-core/dist/DialogContentContainer.js";
 
 const monday = mondaySdk();
+const endpoint = 'https://us-central1-monday-ecopoints.cloudfunctions.net';
 
 const App = props => {
 
@@ -18,7 +19,9 @@ const App = props => {
   const [boardData, setBoardData] = useState(null);
   const [settings, setSettings] = useState(null);
   const [personData, setPersonData] = useState(null);
+  const [firebaseData, setFirebaseData] = useState(null);
 
+  // Monday context listener
   useEffect(() => {
     monday.listen("context", res => {
       setBoardCxt(res.data);
@@ -54,7 +57,7 @@ const App = props => {
               let personIdToImageDictionary = [];
               for (let i = 0; i < personIds.length; i++)
                 personIdToImageDictionary[personIds[i]] = res.data.users[i];
-              // console.log("PEOPLE DATA", personIdToImageDictionary);
+              console.log("PEOPLE DATA", personIdToImageDictionary);
               setPersonData(personIdToImageDictionary);
             });
         })
@@ -67,6 +70,19 @@ const App = props => {
 
   }, []);
 
+  // Get board data when the board changes
+  useEffect(() => {
+    const boardId = boardCxt?.boardIds?.[0];
+    if(boardId != null) {
+      fetch(`${endpoint}/getBoardData?board=${boardId}`)
+      .then(res => res.json())
+      .then(res => {
+        setFirebaseData(res);
+        console.log("FIREBASE DATA", res);
+      })
+    }
+  }, [boardCxt?.boardIds?.[0]]);
+
   // Calculate total eco points
   const { totalPoints, personToPoints } = processTable(settings, boardData);
 
@@ -76,8 +92,9 @@ const App = props => {
         <EcoWarriorList
           boardCxt={boardCxt} personToPoints={personToPoints}
           totalPoints={totalPoints} personData={personData}
+          firebaseData={firebaseData}
         />
-        <SettingsPanel personToPoints={personToPoints} />
+        <SettingsPanel personToPoints={personToPoints} boardId={boardCxt?.boardIds?.[0]} />
       </EcoContextProvider>
     </div>
   );

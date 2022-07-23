@@ -1,11 +1,9 @@
 import * as functions from "firebase-functions";
-import {privateKey, rpcProvider, stripeKey, stripeWebhook} from "./secrets";
+import {isProduction, privateKey, rpcProvider, stripeKey, stripeWebhook} from "./secrets";
 import {OffsetHelperABI} from "./abi";
 import {ethers} from "ethers";
 import * as fb from "firebase-admin";
 import Stripe from "stripe";
-
-const isProduction = process.env.NODE_ENV === "production";
 
 // Ethers contract creation
 const provider = new ethers.providers.JsonRpcProvider(rpcProvider);
@@ -22,13 +20,16 @@ const db = fb.firestore();
 // Constants
 const PURCHASES_COLLECTION = "purchases";
 const CHECKOUT_COLLECTION = "checkout_session";
+const CHAMPIONS_COLLECTION = "champions";
 type CheckoutRecord = {
   customer?: string,
   ethTransaction?: string,
   completed?: boolean,
   board: number,
   tons: number,
-  id: string
+  id: string,
+  championId: number,
+  championPoints: number
 };
 
 // Returns an address based on whether or not in production
@@ -49,22 +50,6 @@ function contract(symbol: "USDC" | "NCT" | "OffsetHelper", forceProduction = fal
 }
 
 /*
-  Returns the last carbon credit purchase for a board.
-*/
-export const lastPurchase = functions.https.onRequest(async (request, response) => {
-  const board = Number.parseInt(request.body.board);
-
-  console.log(typeof (board), board);
-  if (typeof (board) !== "number" || isNaN(board)) {
-    response.status(400).json({success: false, reason: "Board incorrect"});
-    return;
-  }
-
-  const res = await db.collection(PURCHASES_COLLECTION).where("board", "==", board).orderBy("date", "desc").limit(1).get();
-  response.status(200).json({success: true, ...(res.docs[0].data())});
-});
-
-/*
   Creates a Stripe checkout session for carbon credits.
 */
 export const createCheckoutSession = functions.https.onRequest(async (request, response) => {
@@ -73,6 +58,8 @@ export const createCheckoutSession = functions.https.onRequest(async (request, r
 
   const tons = Number.parseInt(request.body.tons);
   const board = Number.parseInt(request.body.board);
+  const championId = Number.parseInt(request.body.championId);
+  const championPoints = Number.parseInt(request.body.championPoints);
 
   if (typeof (tons) !== "number" || isNaN(tons) || tons < 1 || tons > 10) {
     response.status(400).json({success: false, reason: "Incorrect amount of tons."});
@@ -119,7 +106,7 @@ export const createCheckoutSession = functions.https.onRequest(async (request, r
   console.log("FINISHED SESSION CREATION");
 
   // Create session object in firebase
-  const checkoutRecord : CheckoutRecord = {id: session.id, board, tons};
+  const checkoutRecord: CheckoutRecord = {id: session.id, board, tons, championId, championPoints};
   if (session.customer != null) checkoutRecord.customer = session.customer?.toString();
   await db.collection(CHECKOUT_COLLECTION).doc(session.id).create(checkoutRecord);
 
@@ -183,9 +170,93 @@ export const stripeFulfillment = functions.runWith({
       tons: data.tons,
       ethTransaction: hash,
     });
+    await db.collection(CHAMPIONS_COLLECTION).doc(session.id).create({
+      board: data.board,
+      date: Date.now(),
+      points: data.championPoints,
+      id: data.id,
+    });
   }
 
   response.status(200).send({success: true});
+});
+
+/**
+ * Gets all of the data about a board
+ */
+export const getBoardData = functions.https.onRequest(async (request, response) => {
+  response.set("Access-Control-Allow-Origin", "*");
+
+  const boardQuery: string = request.query.board as string;
+  const board = Number.parseInt(boardQuery);
+
+  console.log(typeof (board), board);
+  if (typeof (board) !== "number" || isNaN(board)) {
+    response.status(400).json({success: false, reason: "Board incorrect"});
+    return;
+  }
+
+  // Previous champions
+  const championRes = await db.collection(CHAMPIONS_COLLECTION).where("board", "==", board).orderBy("date", "desc").get();
+  const championData: any[] = [];
+  championRes.docs.forEach((x) => championData.push(x.data()));
+
+  // Last purchase
+  const purchasesRes = await db.collection(PURCHASES_COLLECTION)
+      .where("board", "==", board)
+      .orderBy("date", "desc").limit(1).get();
+  const lastPurchase = purchasesRes.docs[0]?.data();
+
+  response.status(200).json({success: true, previousChampions: championData, lastPurchase});
+});
+
+/**
+ * Gets a list of the previous champions of a board
+ */
+export const getPreviousChampions = functions.https.onRequest(async (request, response) => {
+  const boardQuery: string = request.query.board as string;
+  const board = Number.parseInt(boardQuery);
+
+  console.log(typeof (board), board);
+  if (typeof (board) !== "number" || isNaN(board)) {
+    response.status(400).json({success: false, reason: "Board incorrect"});
+    return;
+  }
+
+  const res = await db.collection(CHAMPIONS_COLLECTION).where("board", "==", board).orderBy("date", "desc").get();
+  const data: any[] = [];
+  res.docs.forEach((x) => data.push(x.data()));
+  response.status(200).json({success: true, data});
+});
+
+/*
+  Returns the last carbon credit purchase for a board.
+*/
+export const getLastPurchase = functions.https.onRequest(async (request, response) => {
+  const boardQuery: string = request.query.board as string;
+  const board = Number.parseInt(boardQuery);
+
+  console.log(typeof (board), board);
+  if (typeof (board) !== "number" || isNaN(board)) {
+    response.status(400).json({success: false, reason: "Board incorrect"});
+    return;
+  }
+
+  const res = await db.collection(PURCHASES_COLLECTION).where("board", "==", board).orderBy("date", "desc").limit(1).get();
+  if (res.docs[0] == null) response.status(200).json({success: true});
+  else response.status(200).json({success: true, ...(res.docs[0].data())});
+});
+
+
+/*
+  Returns the price of per ton of carbon.
+  DEPRECATED: Unused
+*/
+export const getCarbonCreditPrice = functions.https.onRequest(async (request, response) => {
+  const price = await pricePerTon();
+
+  if (price === undefined) response.status(400).json({success: false});
+  else response.status(200).json({success: true, price});
 });
 
 /*
@@ -207,13 +278,3 @@ async function pricePerTon(): Promise<number | undefined> {
   // 7.5% profit? Well hey, we gotta pay for servers. Plus other markets charge 15%.
   return 1.17 * adjustedPrice;
 }
-
-/*
-  Returns the price of per ton of carbon.
-*/
-export const getCarbonCreditPrice = functions.https.onRequest(async (request, response) => {
-  const price = await pricePerTon();
-
-  if (price === undefined) response.status(400).json({success: false});
-  else response.status(200).json({success: true, price});
-});

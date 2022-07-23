@@ -1,23 +1,14 @@
 import React, { useState, useEffect } from "react";
-import "monday-ui-react-core/dist/main.css"
+import "monday-ui-react-core/dist/main.css";
 //Explore more Monday React Components here: https://style.monday.com/
 import Button from "monday-ui-react-core/dist/Button";
 import Heading from "monday-ui-react-core/dist/Heading";
 import Slider from "monday-ui-react-core/dist/Slider";
 import Accordion from "monday-ui-react-core/dist/Accordion";
 import AccordionItem from "monday-ui-react-core/dist/AccordionItem";
-import { initializeApp } from 'firebase/app';
-import { getFunctions, httpsCallable } from 'firebase/functions';
 
-/*
-const app = initializeApp({
-  projectId: "monday-ecopoints",
-  apiKey: "AIzaSyBXrjZj2_on0RQbbCevUFV_QRZC711gUak",
-  authDomain: "monday-ecopoints.firebaseapp.com"
-});
-const functions = getFunctions(app);
-*/
 const isProduction = process.env.NODE_ENV === "production";
+const endpoint = 'https://us-central1-monday-ecopoints.cloudfunctions.net';
 
 /**
  * props.monday -> monday sdk
@@ -46,9 +37,11 @@ const SettingsPanel = props => {
 
     var urlencoded = new URLSearchParams();
     urlencoded.append("tons", carbonPledge.toString());
+    urlencoded.append("board", props.boardId);
     urlencoded.append("returnURL", window.location.href.toString());
     urlencoded.append("championId", champion[0]);
     urlencoded.append("championPoints", champion[1].toString());
+
 
     var requestOptions = {
       method: 'POST',
@@ -57,9 +50,7 @@ const SettingsPanel = props => {
       redirect: 'follow'
     };
 
-    const checkoutURL = isProduction ? 
-      "https://us-central1-monday-ecopoints.cloudfunctions.net/createCheckoutSession" : 
-      "http://localhost:5001/monday-ecopoints/us-central1/createCheckoutSession";
+    const checkoutURL = `${endpoint}/createCheckoutSession`;
     fetch(checkoutURL, requestOptions)
       .then(response => response.json())
       .then(result => {
@@ -67,6 +58,14 @@ const SettingsPanel = props => {
         setCarbonLoading(false);
       })
       .catch(error => console.log('error', error));
+  }
+
+  function calculateCarbonPrice(tons) {
+    if(tons == null) return 0;
+
+    if(tons < 5) return tons * 5;
+    else if(tons < 10) return 20 + (tons - 4) * 3.5;
+    else return 39;
   }
 
   return (
@@ -89,15 +88,12 @@ const SettingsPanel = props => {
             />
             <div style={{ marginTop: '1rem' }} />
             <div style={{ display: "flex" }}>
-              <div style={{ fontSize: '36px', width: '40%', color: 'var(--color-success)' }}>${carbonPledge * 5}.00</div>
+              <div style={{ fontSize: '36px', width: '40%', color: 'var(--color-success)' }}>${calculateCarbonPrice(carbonPledge).toFixed(2)}</div>
               <div style={{ width: '60%', textAlign: 'right' }}>
                 <Button color={Button.colors.POSITIVE} onClick={removeCarbonRequest} loading={carbonLoading}>
                   Remove carbon
                 </Button>
               </div>
-            </div>
-            <div style={{ marginTop: '1rem' }}>
-              Last pledge fulfilled: 12/12/12
             </div>
           </div>
         </AccordionItem>
