@@ -8,7 +8,7 @@ export default () => (
     />
     <div style={{ margin: 'auto', maxWidth: '80%' }}>
       <h3>Hooray! You successfully redeemed carbon credits!</h3>
-      <p>You should feel good about yourself. Feel free to close this page and return to Monday.</p>
+      <p>You should feel good about yourself. And that's all you need to do! Feel free to close this page and return to Monday.</p>
     </div>
   </div>
-)
+);

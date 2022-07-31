@@ -36,7 +36,7 @@ const EcoWarriorList = props => {
         <Heading value="Ecopoint earners" customColor={'black'} type={Heading.types.h2} />
         <TabsContext>
           <TabList size="md">
-            <Tab>Top Monthly</Tab>
+            <Tab>Top Current</Tab>
             <Tab>Previous Champions</Tab>
           </TabList>
           <TabPanels>
@@ -89,7 +89,7 @@ const EcoWarriorList = props => {
   }
   catch (err) {
     // Return skeleton
-    //console.log(err);
+    console.log(err);
     const phonyArr = [0, 0, 0];
     return (
       <EcoPanel>

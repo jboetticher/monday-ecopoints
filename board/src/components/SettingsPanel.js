@@ -61,10 +61,10 @@ const SettingsPanel = props => {
   }
 
   function calculateCarbonPrice(tons) {
-    if(tons == null) return 0;
+    if (tons == null) return 0;
 
-    if(tons < 5) return tons * 5;
-    else if(tons < 10) return 20 + (tons - 4) * 3.5;
+    if (tons < 5) return tons * 5;
+    else if (tons < 10) return 20 + (tons - 4) * 3.5;
     else return 39;
   }
 
@@ -99,46 +99,56 @@ const SettingsPanel = props => {
         </AccordionItem>
         <AccordionItem title="How it Works">
           <div className="abox">
-            <Heading value="EcoPoints for teams" customColor={'black'} type={Heading.types.h4} />
-            <div>
-              EcoPoints can be anything and are calculated <b>per board</b>. Sales, time spent, or just an
-              arbitrary number. As long as it's a number column in your tasks, you can set it in your settings!
-            </div>
-            <div>
-              Teams pledge to remove carbon in exchange for productivity, and Team Members that
-              have the most EcoPoints accrued will gain the most credit!
-            </div>
-            <Heading value="Carbon captured" customColor={'black'} type={Heading.types.h4} />
-            <div>
-              We use a carbon credit market to help teams remove carbon from the air.
-            </div>
-            <div>
-              We only purchase natural carbon removal credits, which are projects that sequester
-              carbon dioxide through natural processes, like planting trees.
-            </div>
-            <div>
-              Learn more about carbon offsets
-              <a href="https://www.southpole.com/carbon-offsets-explained" target="_blank"> here</a>.
+            <img 
+              src="https://cdn.discordapp.com/attachments/757328909686669362/1000576760611602472/EcopointExplanation.png" 
+              style={{ width: '100%', marginBottom: '1rem' }}
+            />
+            <p style={{ marginTop: 0 }}>
+              EcoPoints are calculated per month, <b>per board</b>. Any number column can
+              be used as EcoPoints (sales, hours on the job, etc).
+            </p>
+            <p>
+              Team members finish their tasks to gain EcoPoints, and in exchange
+              Teams pledge to remove carbon.
+            </p>
+
+            <p>
+              We use a carbon credit market to help teams remove carbon from the air. We only use natural carbon removal 
+              credits, which are projects that sequester carbon dioxide through natural processes, like planting trees.
+            </p>
+            <div style={{ margin: '1rem 1rem 0rem 1rem', display: 'flex', justifyContent: 'center' }}>
+              <Button
+                color={Button.colors.POSITIVE}
+                onClick={() => window.open("https://ecopoints.projk.net", "_blank")}>
+                Learn more
+              </Button>
             </div>
           </div>
         </AccordionItem>
         <AccordionItem title="Calculate Your Carbon">
           <div className="abox">
             <div>
-              It's important to calculate your team's carbon so that you know what's a good estimate
-              for achieving carbon neutrality.
+              Calculate your team's carbon to get a good estimate for achieving carbon neutrality.
             </div>
-            <div>
-              A good carbon calculator for businesses is linked
-              <a href="https://carbonfund.org/take-action/businesses/business-calculators/" target="_blank"> here</a>.
+            <div style={{ margin: '1rem 1rem 0rem 1rem', display: 'flex', justifyContent: 'center' }}>
+              <Button
+                color={Button.colors.POSITIVE}
+                onClick={() => window.open("https://carbonfund.org/take-action/businesses/business-calculators/", "_blank")}>
+                Calculate carbon
+              </Button>
             </div>
           </div>
         </AccordionItem>
         <AccordionItem title="Troubleshooting">
           <div className="abox">
             <div>
-              If your EcoPoints are not loading, be sure to check the settings. The <b>EcoPoint Column</b> must be a number
-              column. The <b>Task Assignee Column</b> must be a people column.
+              If your EcoPoints are not loading, be sure to check the settings.
+            </div>
+            <div>
+              The <b>EcoPoint Column</b> must be a number column.
+            </div>
+            <div>
+              The <b>Task Assignee Column</b> must be a people column.
             </div>
           </div>
         </AccordionItem>

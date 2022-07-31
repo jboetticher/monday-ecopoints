@@ -14,6 +14,11 @@ export default function processTable(settings, board) {
   if (settings != null && settings.personcolumn != null && settings.personcolumn !== '')
     personColumn = settings.personcolumn;
 
+  // TODO: remove this override
+  ecoPointColumn = 'EcoPoints';
+  personColumn = 'People';
+  console.log("BOAJRD", board)
+
   // Calculate eco points related data if board data has been provided.
   if (board) {
     for (let b of board.boards) {
@@ -40,6 +45,7 @@ export default function processTable(settings, board) {
     }
   }
 
+  console.log('PERSON TO POINTS', personToPoints);
   return { totalPoints, personToPoints };
 }
 

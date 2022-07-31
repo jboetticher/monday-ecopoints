@@ -40,3 +40,34 @@ nav a {
 .content {
   padding: 1rem;
 }
+
+.column {
+  margin: auto;
+  margin-top: 0;
+  max-width: 40%;
+}
+
+.columnBox {
+  display: flex;
+}
+
+.logo {
+  margin: auto; 
+  max-width: 50%;
+  margin-bottom: 1rem; 
+  margin-top: 5rem;
+}
+
+@media (max-width: 500px) {
+  .column {
+    max-width: 80%;
+  }
+
+  .columnBox {
+    display: block;
+  }
+
+  .logo {
+    max-width: 90%;
+  }
+}

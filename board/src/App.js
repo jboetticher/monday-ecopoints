@@ -32,12 +32,11 @@ const App = props => {
         `query ($boardIds: [Int]) { boards (ids:$boardIds) { name items(limit:10000) { name column_values { title text type value } } } }`;
       monday.api(boardQuery, { variables: { boardIds: res.data.boardIds } })
         .then(res => {
-          // console.log("BOARDS", res.data);
+          console.log("BOARDS", res.data);
           setBoardData(res.data);
 
           // Find the personId for every person assigned on the board.
           // TODO: make it only query if there are new users
-          // TODO: multiboard. currently only gets from 1 board
           const peopleIdSet = new Set();
           res.data.boards[0].items.forEach(item => {
             item.column_values.filter(col => col.type === 'multiple-person')
@@ -65,7 +64,7 @@ const App = props => {
 
     monday.listen("settings", res => {
       setSettings(res.data);
-      // console.log('SETTINGS', res.data);
+      console.log('SETTINGS', res.data);
     });
 
   }, []);

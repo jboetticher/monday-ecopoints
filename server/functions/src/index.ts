@@ -185,8 +185,9 @@ export const stripeFulfillment = functions.runWith({
  * Gets all of the data about a board
  */
 export const getBoardData = functions.https.onRequest(async (request, response) => {
-  response.set("Access-Control-Allow-Origin", "*");
-
+  response.setHeader("Access-Control-Allow-Origin", "*");
+  response.setHeader("Access-Control-Allow-Methods", "GET");
+  
   const boardQuery: string = request.query.board as string;
   const board = Number.parseInt(boardQuery);
 
