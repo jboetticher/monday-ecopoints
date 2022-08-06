@@ -29,7 +29,7 @@ const App = props => {
 
       // Query for the boards and their data.
       const boardQuery =
-        `query ($boardIds: [Int]) { boards (ids:$boardIds) { name items(limit:10000) { name column_values { title text type value } } } }`;
+        `query ($boardIds: [Int]) { boards (ids:$boardIds) { name items(limit:10000) { name column_values { title id text type value } } } }`;
       monday.api(boardQuery, { variables: { boardIds: res.data.boardIds } })
         .then(res => {
           console.log("BOARDS", res.data);
