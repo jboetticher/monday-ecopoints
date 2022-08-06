@@ -1,11 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import "monday-ui-react-core/dist/main.css"
-//Explore more Monday React Components here: https://style.monday.com/
 import Flex from "monday-ui-react-core/dist/Flex";
 import Avatar from "monday-ui-react-core/dist/Avatar";
 import Divider from "monday-ui-react-core/dist/Divider";
 import Heading from "monday-ui-react-core/dist/Heading";
 import Skeleton from "monday-ui-react-core/dist/Skeleton";
+import Tab from "monday-ui-react-core/dist/Tab";
+import TabList from "monday-ui-react-core/dist/TabList";
+import TabsContext from "monday-ui-react-core/dist/TabsContext";
+import TabPanel from "monday-ui-react-core/dist/TabPanel";
+import TabPanels from "monday-ui-react-core/dist/TabPanels";
+import EcoPanel from "./EcoPanel";
 
 /**
  * props.monday -> monday sdk
@@ -14,42 +19,61 @@ const EcoWarriorList = props => {
 
   const personToPoints = props.personToPoints;
   const totalPoints = props.totalPoints;
-  const textColor = props?.boardCxt?.theme === 'light' ? 'black' : 'white';
   const personData = props.personData;
+  const firebaseData = props.firebaseData;
 
   // TODO: add a check your settings prompt if there are no users
 
   try {
     // Retrieves top 3 ids and their points
-    const top3 = Object.entries(personToPoints)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3);
-    if(top3 <= 0) throw new Error('No data yet');
-
-    console.log(top3);
+    const topUsers = Object.entries(personToPoints)
+      .sort((a, b) => b[1] - a[1]);
+    if (topUsers.length <= 0) throw new Error('No data yet');
 
     return (
       <EcoPanel>
-        <Heading value="Top ecopoint earners" customColor={textColor} type={Heading.types.h3} />
-        {top3.map((x, i) => (
-          <Flex key={i}>
-            <Avatar size='medium' type='img' src={personData[x[0]]?.photo_thumb} />
-            {i == 0 ?
-              <>
-                <h4 style={{ marginLeft: '1rem', marginRight: '1rem', width: '100%' }}>
-                  {personData[x[0]]?.name ?? personData[x[0]]?.email ?? x[0]}
-                </h4>
-                <h4 style={{ textAlign: 'right' }}>{x[1]}</h4>
-              </> :
-              <>
-                <h5 style={{ marginLeft: '1rem', marginRight: '1rem', width: '100%' }}>
-                  {personData[x[0]]?.name ?? personData[x[0]]?.email ?? x[0]}
-                </h5>
-                <h5 style={{ textAlign: 'right' }}>{x[1]}</h5>
-              </>
-            }
-          </Flex>
-        ))}
+        <Heading value="Ecopoint earners" customColor={'black'} type={Heading.types.h2} />
+        <TabsContext>
+          <TabList size="md">
+            <Tab>Top Current</Tab>
+            <Tab>Previous Champions</Tab>
+          </TabList>
+          <TabPanels>
+            <TabPanel>
+              {topUsers.map((x, i) => (
+                <Flex key={i}>
+                  <Avatar size='medium' type='img' src={personData[x[0]]?.photo_thumb} />
+                  {i == 0 ?
+                    <>
+                      <h4 style={{ marginLeft: '1rem', marginRight: '1rem', width: '100%' }}>
+                        {personData[x[0]]?.name ?? personData[x[0]]?.email ?? x[0]}
+                      </h4>
+                      <h4 style={{ textAlign: 'right' }}>{x[1]}</h4>
+                    </> :
+                    <>
+                      <h5 style={{ marginLeft: '1rem', marginRight: '1rem', width: '100%' }}>
+                        {personData[x[0]]?.name ?? personData[x[0]]?.email ?? x[0]}
+                      </h5>
+                      <h5 style={{ textAlign: 'right' }}>{x[1]}</h5>
+                    </>
+                  }
+                </Flex>
+              ))}
+            </TabPanel>
+            <TabPanel>
+              {firebaseData?.previousChampions?.map((x, i) => (
+                <Flex key={i}>
+                  <Avatar size='medium' type='img' src={personData[x.id]?.photo_thumb} />
+                  <h4 style={{ marginLeft: '1rem' }}>{(new Date(x.date)).toLocaleDateString()}</h4>
+                  <h4 style={{ marginLeft: '1rem', marginRight: '1rem', width: '100%' }}>
+                    {personData[x.id]?.name ?? personData[x.id]?.email ?? x.id}
+                  </h4>
+                  <h4 style={{ textAlign: 'right' }}>{x.points}</h4>
+                </Flex>
+              ))}
+            </TabPanel>
+          </TabPanels>
+        </TabsContext>
         <Divider />
         <Flex>
           <p>{totalPoints}</p>
@@ -64,16 +88,16 @@ const EcoWarriorList = props => {
   }
   catch (err) {
     // Return skeleton
-    //console.log(err);
+    console.log(err);
     const phonyArr = [0, 0, 0];
     return (
       <EcoPanel>
-        <Heading value="Top ecopoint earners" customColor={textColor} type={Heading.types.h3} />
+        <Heading value="Top ecopoint earners" customColor={'black'} type={Heading.types.h2} />
         {
-          phonyArr.map((x, i) => 
-            <Flex key={i} style={{marginBottom: '1.5rem'}}>
+          phonyArr.map((x, i) =>
+            <Flex key={i} style={{ marginBottom: '1.5rem' }}>
               <Skeleton type='circle' />
-              <div style={{width: '1rem'}} />
+              <div style={{ width: '1rem' }} />
               <Skeleton
                 size="h3"
                 type="text"
@@ -85,14 +109,6 @@ const EcoWarriorList = props => {
         <Skeleton size="small" type="text" />
       </EcoPanel>);
   }
-}
-
-const EcoPanel = props => {
-  return (
-    <div className="ecopanel">
-      {props.children}
-    </div>
-  )
 }
 
 export default EcoWarriorList;
