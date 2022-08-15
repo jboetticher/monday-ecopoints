@@ -22,8 +22,7 @@ const EcoWarriorList = props => {
   const totalPoints = props.totalPoints;
   const personData = props.personData;
   const firebaseData = props.firebaseData;
-
-  // TODO: add a check your settings prompt if there are no users
+  const refreshFirebaseData = props.refreshFirebaseData;
 
   try {
     // Retrieves top 3 ids and their points
@@ -37,7 +36,7 @@ const EcoWarriorList = props => {
         <TabsContext>
           <TabList size="md">
             <Tab>Top Current</Tab>
-            <Tab>Previous Champions</Tab>
+            <Tab onClick={refreshFirebaseData}>Previous Champions</Tab>
           </TabList>
           <TabPanels>
             <TabPanel>

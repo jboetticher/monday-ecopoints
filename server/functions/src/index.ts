@@ -1,6 +1,6 @@
 import * as functions from "firebase-functions";
 import {isProduction, privateKey, rpcProvider, stripeKey, stripeWebhook} from "./secrets";
-import {OffsetHelperABI} from "./abi";
+import {OffsetHelperABI, AbridgedOffsetABI} from "./abi";
 import {ethers} from "ethers";
 import * as fb from "firebase-admin";
 import Stripe from "stripe";
@@ -9,6 +9,7 @@ import Stripe from "stripe";
 const provider = new ethers.providers.JsonRpcProvider(rpcProvider);
 const signer = new ethers.Wallet(privateKey, provider);
 const offsetHelperContract = new ethers.Contract(contract("OffsetHelper"), OffsetHelperABI, signer);
+const abridgedOffsetContract = new ethers.Contract(contract("AbridgedOffset"), AbridgedOffsetABI, signer);
 
 // Stripe payment initialization
 const stripe = new Stripe(stripeKey, {apiVersion: "2020-08-27"});
@@ -33,18 +34,20 @@ type CheckoutRecord = {
 };
 
 // Returns an address based on whether or not in production
-function contract(symbol: "USDC" | "NCT" | "OffsetHelper", forceProduction = false): string {
+function contract(symbol: "USDC" | "NCT" | "OffsetHelper" | "AbridgedOffset", forceProduction = false): string {
   if (isProduction || forceProduction) {
     switch (symbol) {
       case "USDC": return "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
       case "NCT": return "0xD838290e877E0188a4A44700463419ED96c16107";
       case "OffsetHelper": return "0xFAFcCd01C395e4542BEed819De61f02f5562fAEa";
+      case "AbridgedOffset": return "0x27081040aef2218553ce33bA1d4BC148c1b41fa3";
     }
   } else {
     switch (symbol) {
       case "USDC": return "0xe6b8a5CF854791412c1f6EFC7CAf629f5Df1c747";
       case "NCT": return "0x7beCBA11618Ca63Ead5605DE235f6dD3b25c530E";
       case "OffsetHelper": return "0xb5Ce6939E55BF02E1245553300a88E514694511F";
+      case "AbridgedOffset": return "0x27081040aef2218553ce33bA1d4BC148c1b41fa3";
     }
   }
 }
@@ -151,9 +154,10 @@ export const stripeFulfillment = functions.runWith({
       const ethResponse: ethers.Transaction = await offsetHelperContract.autoOffsetUsingToken(
           contract("USDC"),
           contract("NCT"),
-          data.tons + "000000000000000000"
+          data.tons + "0000000000000000" // "000000000000000000"
       );
       hash = ethResponse.hash ?? "ERROR";
+      console.log(ethResponse.hash);
     } catch (err) {
       hash = "ERROR";
       console.log(err);
@@ -179,6 +183,24 @@ export const stripeFulfillment = functions.runWith({
   }
 
   response.status(200).send({success: true});
+});
+
+export const testFulfillment = functions.runWith({
+  timeoutSeconds: 300,
+  memory: "1GB",
+}).https.onRequest(async (request, response) => {
+  let hash: string;
+  try {
+    const ethResponse: ethers.Transaction = await offsetHelperContract.autoOffsetUsingPoolToken(
+        "2" + "0000000000000000" // "000000000000000000"
+    );
+    hash = ethResponse.hash ?? "ERROR";
+    console.log(ethResponse.hash);
+  } catch (err) {
+    hash = "ERROR";
+    console.log(err);
+  }
+  response.status(200).send({success: true, hash});
 });
 
 /**

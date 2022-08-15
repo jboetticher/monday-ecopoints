@@ -70,17 +70,18 @@ const App = props => {
   }, []);
 
   // Get board data when the board changes
-  useEffect(() => {
+  const refreshFirebaseData = () => {
     const boardId = boardCxt?.boardIds?.[0];
-    if(boardId != null) {
+    if (boardId != null) {
       fetch(`${endpoint}/getBoardData?board=${boardId}`)
-      .then(res => res.json())
-      .then(res => {
-        setFirebaseData(res);
-        console.log("FIREBASE DATA", res);
-      })
+        .then(res => res.json())
+        .then(res => {
+          setFirebaseData(res);
+          console.log("FIREBASE DATA", res);
+        })
     }
-  }, [boardCxt?.boardIds?.[0]]);
+  }
+  useEffect(() => { refreshFirebaseData() }, [boardCxt?.boardIds?.[0]]);
 
   // Calculate total eco points
   const { totalPoints, personToPoints } = processTable(settings, boardData);
@@ -91,7 +92,7 @@ const App = props => {
         <EcoWarriorList
           boardCxt={boardCxt} personToPoints={personToPoints}
           totalPoints={totalPoints} personData={personData}
-          firebaseData={firebaseData}
+          firebaseData={firebaseData} refreshFirebaseData={refreshFirebaseData}
         />
         <SettingsPanel personToPoints={personToPoints} boardId={boardCxt?.boardIds?.[0]} />
       </EcoContextProvider>
