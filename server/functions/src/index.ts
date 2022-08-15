@@ -40,14 +40,14 @@ function contract(symbol: "USDC" | "NCT" | "OffsetHelper" | "AbridgedOffset", fo
       case "USDC": return "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174";
       case "NCT": return "0xD838290e877E0188a4A44700463419ED96c16107";
       case "OffsetHelper": return "0xFAFcCd01C395e4542BEed819De61f02f5562fAEa";
-      case "AbridgedOffset": return "0x27081040aef2218553ce33bA1d4BC148c1b41fa3";
+      case "AbridgedOffset": return "0x4095590F24CC8CdCC3309AA0c46b28d4Ce6F8C6c";
     }
   } else {
     switch (symbol) {
       case "USDC": return "0xe6b8a5CF854791412c1f6EFC7CAf629f5Df1c747";
       case "NCT": return "0x7beCBA11618Ca63Ead5605DE235f6dD3b25c530E";
       case "OffsetHelper": return "0xb5Ce6939E55BF02E1245553300a88E514694511F";
-      case "AbridgedOffset": return "0x27081040aef2218553ce33bA1d4BC148c1b41fa3";
+      case "AbridgedOffset": return "0x4095590F24CC8CdCC3309AA0c46b28d4Ce6F8C6c";
     }
   }
 }
@@ -147,13 +147,12 @@ export const stripeFulfillment = functions.runWith({
 
     // Redeem NCT for carbon CAPTURE credit & redeem the carbon capture credit.
     // We're using the offset helper contract so that we don't need 2 transactions.
-    // The only maintenance this requires is insuring that there is enough USDC on
-    // the production account.
+    // Maitenance:
+    // - Periodic retire of redeemed NCT
+    // - Periodic purchasing of NCTs
     let hash: string;
     try {
-      const ethResponse: ethers.Transaction = await offsetHelperContract.autoOffsetUsingToken(
-          contract("USDC"),
-          contract("NCT"),
+      const ethResponse: ethers.Transaction = await abridgedOffsetContract.autoOffsetUsingPoolToken(
           data.tons + "0000000000000000" // "000000000000000000"
       );
       hash = ethResponse.hash ?? "ERROR";
@@ -179,20 +178,22 @@ export const stripeFulfillment = functions.runWith({
       date: Date.now(),
       points: data.championPoints,
       id: data.id,
+      tons: data.tons,
     });
   }
 
   response.status(200).send({success: true});
 });
 
+/*
 export const testFulfillment = functions.runWith({
   timeoutSeconds: 300,
   memory: "1GB",
 }).https.onRequest(async (request, response) => {
   let hash: string;
   try {
-    const ethResponse: ethers.Transaction = await offsetHelperContract.autoOffsetUsingPoolToken(
-        "2" + "0000000000000000" // "000000000000000000"
+    const ethResponse: ethers.Transaction = await abridgedOffsetContract.autoOffsetUsingPoolToken(
+      "2" + "0000000000000000" // "000000000000000000"
     );
     hash = ethResponse.hash ?? "ERROR";
     console.log(ethResponse.hash);
@@ -200,8 +201,9 @@ export const testFulfillment = functions.runWith({
     hash = "ERROR";
     console.log(err);
   }
-  response.status(200).send({success: true, hash});
+  response.status(200).send({ success: true, hash });
 });
+*/
 
 /**
  * Gets all of the data about a board
@@ -222,7 +224,11 @@ export const getBoardData = functions.https.onRequest(async (request, response) 
   // Previous champions
   const championRes = await db.collection(CHAMPIONS_COLLECTION).where("board", "==", board).orderBy("date", "desc").get();
   const championData: any[] = [];
-  championRes.docs.forEach((x) => championData.push(x.data()));
+  let tonsSum = 0;
+  championRes.docs.forEach((x) => {
+    championData.push(x.data());
+    tonsSum += x.data().tons as number;
+  });
 
   // Last purchase
   const purchasesRes = await db.collection(PURCHASES_COLLECTION)
@@ -230,7 +236,8 @@ export const getBoardData = functions.https.onRequest(async (request, response) 
       .orderBy("date", "desc").limit(1).get();
   const lastPurchase = purchasesRes.docs[0]?.data();
 
-  response.status(200).json({success: true, previousChampions: championData, lastPurchase});
+
+  response.status(200).json({success: true, previousChampions: championData, lastPurchase, tonsSum});
 });
 
 /**
