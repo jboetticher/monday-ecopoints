@@ -21,8 +21,7 @@ const EcoWarriorList = props => {
   const totalPoints = props.totalPoints;
   const personData = props.personData;
   const firebaseData = props.firebaseData;
-
-  // TODO: add a check your settings prompt if there are no users
+  const refreshFirebaseData = props.refreshFirebaseData;
 
   try {
     // Retrieves top 3 ids and their points
@@ -36,7 +35,7 @@ const EcoWarriorList = props => {
         <TabsContext>
           <TabList size="md">
             <Tab>Top Current</Tab>
-            <Tab>Previous Champions</Tab>
+            <Tab onClick={refreshFirebaseData}>Previous Champions</Tab>
           </TabList>
           <TabPanels>
             <TabPanel>
@@ -78,10 +77,10 @@ const EcoWarriorList = props => {
         <Flex>
           <p>{totalPoints}</p>
           <img
-            src="https://cdn.discordapp.com/attachments/426940183112318976/985436645962686504/EcoPointx128.png"
+            src="./EcoPointx128.png"
             width='24px' style={{ marginRight: '4px', marginLeft: '4px' }}
           />
-          <p>exist!</p>
+          <p>exist! {firebaseData?.tonsSum ?? 0} total tons sequestered.</p>
         </Flex>
       </EcoPanel>
     );

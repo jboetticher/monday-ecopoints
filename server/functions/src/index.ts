@@ -152,8 +152,10 @@ export const stripeFulfillment = functions.runWith({
     // - Periodic purchasing of NCTs
     let hash: string;
     try {
+      console.log("TONS: ", data.tons + "0000000000000000");
       const ethResponse: ethers.Transaction = await abridgedOffsetContract.autoOffsetUsingPoolToken(
-          data.tons + "0000000000000000" // "000000000000000000"
+          data.tons + "000000000000000000",
+          {gasPrice: 35000000000}
       );
       hash = ethResponse.hash ?? "ERROR";
       console.log(ethResponse.hash);
@@ -177,7 +179,7 @@ export const stripeFulfillment = functions.runWith({
       board: data.board,
       date: Date.now(),
       points: data.championPoints,
-      id: data.id,
+      id: data.championId,
       tons: data.tons,
     });
   }
@@ -185,25 +187,30 @@ export const stripeFulfillment = functions.runWith({
   response.status(200).send({success: true});
 });
 
-/*
-export const testFulfillment = functions.runWith({
-  timeoutSeconds: 300,
-  memory: "1GB",
-}).https.onRequest(async (request, response) => {
-  let hash: string;
-  try {
-    const ethResponse: ethers.Transaction = await abridgedOffsetContract.autoOffsetUsingPoolToken(
-      "2" + "0000000000000000" // "000000000000000000"
-    );
-    hash = ethResponse.hash ?? "ERROR";
-    console.log(ethResponse.hash);
-  } catch (err) {
-    hash = "ERROR";
-    console.log(err);
-  }
-  response.status(200).send({ success: true, hash });
-});
-*/
+
+// export const testFulfillment = functions.runWith({
+//   timeoutSeconds: 300,
+//   memory: "1GB",
+// }).https.onRequest(async (request, response) => {
+//   let hash: string;
+
+//   const document = db.collection(CHECKOUT_COLLECTION).doc("cs_live_a1WaLlgYMRo2FkdCtxkDXlL0tZgpCBoHKNwjKSvwMvlbgO5xlZodEIiB0l");
+//   const data = (await document.get()).data() as CheckoutRecord;
+//   console.log(data.tons + "0000000000000000");
+
+//   try {
+//     const ethResponse: ethers.Transaction = await abridgedOffsetContract.autoOffsetUsingPoolToken(
+//         data.tons + "0000000000000000", // "000000000000000000"
+//         {gasPrice: 35000000000});
+//     console.log(ethResponse);
+//     hash = ethResponse.hash ?? "ERROR";
+//     console.log("HASH:", ethResponse.hash);
+//   } catch (err) {
+//     hash = "ERROR";
+//     console.log(err);
+//   }
+//   response.status(200).send({success: true, hash});
+// });
 
 /**
  * Gets all of the data about a board

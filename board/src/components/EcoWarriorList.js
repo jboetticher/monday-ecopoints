@@ -78,7 +78,7 @@ const EcoWarriorList = props => {
         <Flex>
           <p>{totalPoints}</p>
           <img
-            src="https://cdn.discordapp.com/attachments/426940183112318976/985436645962686504/EcoPointx128.png"
+            src="./EcoPointx128.png"
             width='24px' style={{ marginRight: '4px', marginLeft: '4px' }}
           />
           <p>exist! {firebaseData?.tonsSum ?? 0} total tons sequestered.</p>
