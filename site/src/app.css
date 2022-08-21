@@ -58,6 +58,10 @@ nav a {
   margin-top: 5rem;
 }
 
+table {
+  width: 100%;
+}
+
 @media (max-width: 500px) {
   .column {
     max-width: 80%;

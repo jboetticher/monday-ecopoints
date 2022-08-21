@@ -1,5 +1,7 @@
 import React from 'react'
 
+const pricing = [5, 10, 15, 20, 23.5, 27, 30.5, 34, 37.5, 39];
+
 export default () => (
   <div style={{ textAlign: 'center' }}>
     <img
@@ -9,7 +11,7 @@ export default () => (
     <div className='columnBox'>
       <div className='column'>
         <h3>EcoPoints for Monday Teams</h3>
-        <img style={{width: '80%'}} src='/EcoPointExplanation.png' />
+        <img style={{ width: '80%' }} src='https://cdn.discordapp.com/attachments/992501083081560115/1010731108385689852/EcopointExplanation.png' />
         <p>
           EcoPoints can be anything and are calculated per board. Sales, time spent, or just an arbitrary number. As long as it's a number column in your tasks, you can set it in your settings!
           Teams pledge to remove carbon in exchange for productivity, and Team Members that have the most EcoPoints accrued will gain the most credit!
@@ -28,6 +30,20 @@ export default () => (
           Incentivize your team to maximize their productivity in the name of helping the environment! Team members who do the best will be immortalized on
           your board's champion leaderboard. Alternatively, up your contribution based on how well your team does. How much you contribute is up to you!
         </p>
+      </div>
+    </div>
+    <div className='columnBox'>
+      <div className='column'>
+        <h3>Pricing</h3>
+        <table style={{ minWidth: '400px' }}>
+          <tr>
+            <th>Carbon Sequestered</th>
+            <th>Price (USD)</th>
+          </tr>
+          {pricing.map((price, i) => (
+            <tr><td>{i + 1} Ton{i != 0 ? 's' : ''}</td><td>${price.toFixed(2)}</td></tr>
+          ))}
+        </table>
       </div>
     </div>
   </div>
