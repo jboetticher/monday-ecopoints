@@ -16,6 +16,12 @@ export default () => (
           EcoPoints can be anything and are calculated per board. Sales, time spent, or just an arbitrary number. As long as it's a number column in your tasks, you can set it in your settings!
           Teams pledge to remove carbon in exchange for productivity, and Team Members that have the most EcoPoints accrued will gain the most credit!
         </p>
+        <h3>How to Use</h3>
+        <iframe width="560" height="315" src="https://www.youtube.com/embed/-q0rE331Uos" 
+          title="YouTube video player" frameborder="0" 
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+          allowfullscreen 
+        />
       </div>
       <div className='column'>
         <h3>Carbon Captured</h3>
